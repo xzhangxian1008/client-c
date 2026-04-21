@@ -74,7 +74,6 @@ struct RegionClient
             if (!status.ok())
             {
                 auto extra_msg = "region_id: " + region_id.toString() + ", addr: " + ctx->addr;
-                rpc.dropConnIfNeeded(status);
                 if (status.error_code() == ::grpc::StatusCode::UNIMPLEMENTED)
                 {
                     // The rpc is not implemented on this service.
@@ -128,7 +127,7 @@ struct RegionClient
                 return ::grpc::Status::OK;
             auto status = reader->Finish();
             if (client != nullptr && shouldRemoveConnOnStatus(status))
-                client->removeConn(addr);
+                client->markConnInvalid(addr);
             return status;
         }
 
@@ -202,7 +201,6 @@ struct RegionClient
                 return stream_reader;
             }
             auto extra_msg = "region_id: " + region_id.toString() + ", addr: " + ctx->addr;
-            rpc.dropConnIfNeeded(status);
             if (status.error_code() == ::grpc::StatusCode::UNIMPLEMENTED)
             {
                 // The rpc is not implemented on this service.
