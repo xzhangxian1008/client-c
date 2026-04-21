@@ -82,7 +82,7 @@ struct RegionClient
                 }
                 std::string err_msg = rpc.errMsg(status, extra_msg);
                 log->warning(err_msg);
-                onSendFail(bo, Exception(err_msg, GRPCErrorCode), ctx);
+                onSendFail(bo, Exception(err_msg, GRPCErrorCode), ctx, status);
                 continue;
             }
             if (resp->has_region_error())
@@ -205,13 +205,12 @@ struct RegionClient
             rpc.dropConnIfNeeded(status);
             if (status.error_code() == ::grpc::StatusCode::UNIMPLEMENTED)
             {
-
                 // The rpc is not implemented on this service.
                 throw Exception("rpc is not implemented: " + rpc.errMsg(status, extra_msg), GRPCNotImplemented);
             }
             std::string err_msg = rpc.errMsg(status, extra_msg);
             log->warning(err_msg);
-            onSendFail(bo, Exception(err_msg, GRPCErrorCode), ctx);
+            onSendFail(bo, Exception(err_msg, GRPCErrorCode), ctx, status);
         }
     }
 
@@ -219,7 +218,7 @@ protected:
     void onRegionError(Backoffer & bo, RPCContextPtr rpc_ctx, const errorpb::Error & err) const;
 
     // Normally, it happens when machine down or network partition between tidb and kv or process crash.
-    void onSendFail(Backoffer & bo, const Exception & e, RPCContextPtr rpc_ctx) const;
+    void onSendFail(Backoffer & bo, const Exception & e, RPCContextPtr rpc_ctx, const ::grpc::Status & status) const;
 };
 
 } // namespace kv
