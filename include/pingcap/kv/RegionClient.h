@@ -125,16 +125,11 @@ struct RegionClient
         {
             if (no_resp)
                 return ::grpc::Status::OK;
-            auto status = reader->Finish();
-            if (client != nullptr && shouldRemoveConnOnStatus(status))
-                client->markConnInvalid(addr);
-            return status;
+            return reader->Finish();
         }
 
     private:
         friend struct RegionClient;
-        RpcClient * client = nullptr;
-        std::string addr;
         ::grpc::ClientContext context;
         std::unique_ptr<::grpc::ClientReader<RESP>> reader;
         bool no_resp = false;
@@ -170,8 +165,6 @@ struct RegionClient
             }
 
             auto stream_reader = std::make_unique<StreamReader<RESP>>();
-            stream_reader->client = cluster->rpc_client.get();
-            stream_reader->addr = ctx->addr;
             RpcCall<T> rpc(cluster->rpc_client, ctx->addr);
             rpc.setRequestCtx(req, ctx, cluster->api_version);
             rpc.setClientContext(stream_reader->context, timeout, meta_data);

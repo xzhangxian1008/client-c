@@ -34,18 +34,6 @@ struct ConnArray
     std::shared_ptr<KvConnClient> get();
 };
 
-inline bool shouldRemoveConnOnStatus(const ::grpc::Status & status)
-{
-    switch (status.error_code())
-    {
-    case ::grpc::StatusCode::UNAVAILABLE:
-    case ::grpc::StatusCode::CANCELLED:
-        return true;
-    default:
-        return false;
-    }
-}
-
 using ConnArrayPtr = std::shared_ptr<ConnArray>;
 using GRPCMetaData = std::multimap<std::string, std::string>;
 
